@@ -3,7 +3,7 @@ services:
 
   postgres:
     # In production, replace 'latest' with tag from https://hub.docker.com/_/postgres?tab=tags
-    image: postgres:latest
+    image: postgres:16.0
     restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=root
@@ -16,7 +16,7 @@ services:
 
   redis:
     # In production, replace 'latest' with tag from https://hub.docker.com/_/redis?tab=tags
-    image: redis:latest
+    image: redis:7.2.2
     command: redis-server --appendonly yes
     restart: unless-stopped
     volumes:
@@ -26,7 +26,7 @@ services:
 
   stack:
     # In production, replace 'latest' with tag from https://hub.docker.com/r/thethingsnetwork/lorawan-stack/tags
-    image: thethingsnetwork/lorawan-stack:latest
+    image: thethingsnetwork/lorawan-stack:3.27.2
     entrypoint: ttn-lw-stack -c /config/ttn-lw-stack-docker.yml
     command: start
     restart: unless-stopped
