@@ -1,0 +1,14 @@
+{
+    "hosts": [
+        "lorastuff",
+        "192.168.178.47"
+    ],
+    "names": [
+        {
+            "C": "DE",
+            "ST": "Baden-Württemberg",
+            "L": "Stuttgart",
+            "O": "Demo"
+        }
+    ]
+}
