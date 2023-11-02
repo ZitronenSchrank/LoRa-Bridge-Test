@@ -26,7 +26,7 @@ services:
 
   stack:
     # In production, replace 'latest' with tag from https://hub.docker.com/r/thethingsnetwork/lorawan-stack/tags
-    image: thethingsnetwork/lorawan-stack:3.27.2
+    image: thethingsnetwork/lorawan-stack:3.28.0
     entrypoint: ttn-lw-stack -c /config/ttn-lw-stack-docker.yml
     command: start
     restart: unless-stopped
