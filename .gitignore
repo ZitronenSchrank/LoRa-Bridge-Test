@@ -11,3 +11,5 @@ nodered
 /data
 /lorawan-devices
 
+*.pem
+*.csr
