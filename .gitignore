@@ -1,12 +1,15 @@
-.env
-blob
+
 grafana-provisioning
 influxdb
 nodered
-ca-key.pem
-ca.csr
-ca.pem
-cert-key.pem
-cert.csr
-cert.pem
-key.pem
+
+# hidden files, exluding gitattributes
+.*
+!.gitattributes
+
+# data folder
+/data
+/lorawan-devices
+
+*.pem
+*.csr

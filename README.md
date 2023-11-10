@@ -1,1 +1,0 @@
-# LoraWAN Bridge Test
