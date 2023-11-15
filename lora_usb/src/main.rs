@@ -14,11 +14,7 @@ use paho_mqtt as mqtt;
 use serialport::SerialPort;
 use uplink_message::UplinkMessage;
 
-use base64::{
-    alphabet,
-    engine::{self, general_purpose},
-    Engine as _,
-};
+use base64::{engine::general_purpose, Engine as _};
 
 fn mqtt_connect(host: &str) -> (Client, Receiver<Option<Message>>) {
     // Create the client. Use an ID for a persistent session.
