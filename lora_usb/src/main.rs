@@ -1,6 +1,8 @@
 use std::{
     io::{self, Write},
-    process, thread,
+    process,
+    sync::mpsc::{channel, Sender},
+    thread,
     time::Duration,
 };
 
@@ -106,10 +108,14 @@ fn serial_write(port: &mut Box<dyn SerialPort>, command: &str) {
     std::thread::sleep(Duration::from_millis((1000.0 / 9600_f32) as u64));
 }
 
-fn start_mqtt_thread(client: Client, rx: Receiver<Option<Message>>) -> std::thread::JoinHandle<()> {
+fn start_mqtt_thread(
+    sender: Sender<String>,
+    rx: Receiver<Option<Message>>,
+) -> std::thread::JoinHandle<()> {
     thread::spawn(move || {
         for msg in rx.iter().flatten() {
-            print!("{}", msg);
+            sender.send(msg.to_string()).unwrap();
+            //print!("{}", msg);
         }
     })
 }
@@ -125,9 +131,10 @@ fn main() {
         .timeout(Duration::from_millis(10))
         .open();
 
-    let (client, rx) = mqtt_connect("broker.hivemq.com:1883");
+    let (_, rx) = mqtt_connect("broker.hivemq.com:1883");
+    let (sender, receiver) = channel::<String>();
 
-    start_mqtt_thread(client, rx);
+    start_mqtt_thread(sender, rx);
 
     match port {
         Ok(mut port) => {
@@ -142,6 +149,10 @@ fn main() {
                     Ok(t) => {
                         string.push_str(&String::from_utf8(serial_buf[..t].to_vec()).unwrap());
                         io::stdout().write_all(&serial_buf[..t]).unwrap();
+
+                        if let Ok(msg) = receiver.try_recv() {
+                            println!("{}", msg);
+                        }
 
                         if !joined {
                             if string.ends_with("\r\nAT_NO_NET_JOINED") {
