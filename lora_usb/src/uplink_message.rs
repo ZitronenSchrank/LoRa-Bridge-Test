@@ -14,7 +14,6 @@ pub struct RxInfo {
     pub time: String,
     pub rssi: i16,
     pub snr: f32,
-    pub channel: u8,
     pub context: String,
     pub metadata: RxInfoMetadata,
     pub crc_status: String,

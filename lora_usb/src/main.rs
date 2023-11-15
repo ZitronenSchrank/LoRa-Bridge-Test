@@ -149,14 +149,14 @@ fn main() {
             serial_write(&mut port, "AT+JOIN?");
             let mut string = String::new();
             loop {
+                if let Ok(msg) = receiver.try_recv() {
+                    println!("{:?}", msg);
+                }
+
                 match port.read(serial_buf.as_mut_slice()) {
                     Ok(t) => {
                         string.push_str(&String::from_utf8(serial_buf[..t].to_vec()).unwrap());
                         io::stdout().write_all(&serial_buf[..t]).unwrap();
-
-                        if let Ok(msg) = receiver.try_recv() {
-                            println!("{:?}", msg);
-                        }
 
                         if !joined {
                             if string.ends_with("\r\nAT_NO_NET_JOINED") {
@@ -178,7 +178,7 @@ fn main() {
                             }
                             if string.ends_with("\r\nrxDone") {
                                 string = String::new();
-                                serial_write(&mut port, "AT+SENDB=5,2,4,11223344");
+                                //serial_write(&mut port, "AT+SENDB=5,2,4,11223344");
                             }
                         }
                     }
