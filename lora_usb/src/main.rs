@@ -1,3 +1,5 @@
+pub mod uplink_message;
+
 use std::{
     io::{self, Write},
     process,
@@ -8,82 +10,9 @@ use std::{
 
 use mqtt::{Client, Message, Receiver};
 use paho_mqtt as mqtt;
-use serde::{Deserialize, Serialize};
 
 use serialport::SerialPort;
-
-#[derive(Serialize, Deserialize, Debug)]
-struct RxInfoMetadata {
-    region_common_name: String,
-    region_config_id: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-struct RxInfo {
-    gateway_id: String,
-    uplink_id: u64,
-    time: String,
-    rssi: i16,
-    snr: f32,
-    channel: u8,
-    rf_chain: u8,
-    context: String,
-    metadata: RxInfoMetadata,
-    crc_status: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-struct Lora {
-    bandwidth: u64,
-    spreading_factor: u8,
-    code_rate: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-struct Modulation {
-    lora: Lora,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-struct TxInfo {
-    frequency: u64,
-    modulation: Modulation,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-struct DeviceInfo {
-    tenant_id: String,
-    tenant_name: String,
-    application_id: String,
-    application_name: String,
-    device_profile_id: String,
-    device_profile_name: String,
-    device_name: String,
-    dev_eui: String,
-    device_class_enabled: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-struct UplinkMessage {
-    deduplication_id: String,
-    time: String,
-    device_info: DeviceInfo,
-    dev_addr: String,
-    adr: bool,
-    dr: u8,
-    f_cnt: u64,
-    f_port: u8,
-    confirmed: bool,
-    data: String,
-    rx_info: Vec<RxInfo>,
-    tx_info: TxInfo,
-}
+use uplink_message::UplinkMessage;
 
 fn mqtt_connect(host: &str) -> (Client, Receiver<Option<Message>>) {
     // Create the client. Use an ID for a persistent session.
