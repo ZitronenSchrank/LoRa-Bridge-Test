@@ -8,8 +8,82 @@ use std::{
 
 use mqtt::{Client, Message, Receiver};
 use paho_mqtt as mqtt;
+use serde::{Deserialize, Serialize};
 
 use serialport::SerialPort;
+
+#[derive(Serialize, Deserialize, Debug)]
+struct RxInfoMetadata {
+    region_common_name: String,
+    region_config_id: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct RxInfo {
+    gateway_id: String,
+    uplink_id: u64,
+    time: String,
+    rssi: i16,
+    snr: f32,
+    channel: u8,
+    rf_chain: u8,
+    context: String,
+    metadata: RxInfoMetadata,
+    crc_status: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct Lora {
+    bandwidth: u64,
+    spreading_factor: u8,
+    code_rate: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct Modulation {
+    lora: Lora,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct TxInfo {
+    frequency: u64,
+    modulation: Modulation,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct DeviceInfo {
+    tenant_id: String,
+    tenant_name: String,
+    application_id: String,
+    application_name: String,
+    device_profile_id: String,
+    device_profile_name: String,
+    device_name: String,
+    dev_eui: String,
+    device_class_enabled: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct UplinkMessage {
+    deduplication_id: String,
+    time: String,
+    device_info: DeviceInfo,
+    dev_addr: String,
+    adr: bool,
+    dr: u8,
+    f_cnt: u64,
+    f_port: u8,
+    confirmed: bool,
+    data: String,
+    rx_info: Vec<RxInfo>,
+    tx_info: TxInfo,
+}
 
 fn mqtt_connect(host: &str) -> (Client, Receiver<Option<Message>>) {
     // Create the client. Use an ID for a persistent session.
@@ -35,12 +109,12 @@ fn mqtt_connect(host: &str) -> (Client, Receiver<Option<Message>>) {
 
     let conn_opts = mqtt::ConnectOptionsBuilder::new()
         .keep_alive_interval(Duration::from_secs(20))
-        .clean_session(false)
+        .clean_session(true)
         .will_message(lwt)
         .finalize();
 
-    let subscriptions = ["test", "hello"];
-    let qos = [1, 1];
+    let subscriptions = ["application/+/device/70b3d5581000003d/event/up"];
+    let qos = [0];
 
     // Make the connection to the broker
     match cli.connect(conn_opts) {
@@ -109,13 +183,14 @@ fn serial_write(port: &mut Box<dyn SerialPort>, command: &str) {
 }
 
 fn start_mqtt_thread(
-    sender: Sender<String>,
+    sender: Sender<UplinkMessage>,
     rx: Receiver<Option<Message>>,
 ) -> std::thread::JoinHandle<()> {
     thread::spawn(move || {
         for msg in rx.iter().flatten() {
-            sender.send(msg.to_string()).unwrap();
-            //print!("{}", msg);
+            let payload = msg.payload_str().to_string();
+            let payload: UplinkMessage = serde_json::from_str(&payload).unwrap();
+            sender.send(payload).unwrap();
         }
     })
 }
@@ -131,8 +206,8 @@ fn main() {
         .timeout(Duration::from_millis(10))
         .open();
 
-    let (_, rx) = mqtt_connect("broker.hivemq.com:1883");
-    let (sender, receiver) = channel::<String>();
+    let (_, rx) = mqtt_connect("lorastuff:1883");
+    let (sender, receiver) = channel::<UplinkMessage>();
 
     start_mqtt_thread(sender, rx);
 
@@ -151,7 +226,7 @@ fn main() {
                         io::stdout().write_all(&serial_buf[..t]).unwrap();
 
                         if let Ok(msg) = receiver.try_recv() {
-                            println!("{}", msg);
+                            println!("{:?}", msg);
                         }
 
                         if !joined {
