@@ -14,6 +14,12 @@ use paho_mqtt as mqtt;
 use serialport::SerialPort;
 use uplink_message::UplinkMessage;
 
+use base64::{
+    alphabet,
+    engine::{self, general_purpose},
+    Engine as _,
+};
+
 fn mqtt_connect(host: &str) -> (Client, Receiver<Option<Message>>) {
     // Create the client. Use an ID for a persistent session.
     // A real system should try harder to use a unique ID.
@@ -148,9 +154,15 @@ fn main() {
             //serial_write(&mut port, "AT+SENDB=0,2,4,11223344");
             serial_write(&mut port, "AT+JOIN?");
             let mut string = String::new();
+
             loop {
                 if let Ok(msg) = receiver.try_recv() {
                     println!("{:?}", msg);
+                    let data = general_purpose::STANDARD.decode(msg.data).unwrap();
+                    let payload = hex::encode(&data);
+
+                    let data = format!("AT+SENDB=5,2,{},{}", data.len(), payload);
+                    serial_write(&mut port, &data);
                 }
 
                 match port.read(serial_buf.as_mut_slice()) {
@@ -176,6 +188,7 @@ fn main() {
                             if string.ends_with("\r\ntxDone") {
                                 // TODO
                             }
+
                             if string.ends_with("\r\nrxDone") {
                                 string = String::new();
                                 //serial_write(&mut port, "AT+SENDB=5,2,4,11223344");
