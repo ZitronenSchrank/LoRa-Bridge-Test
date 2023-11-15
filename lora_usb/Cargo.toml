@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 serialport = "4.2.2"
+paho-mqtt = "0.12"
+ctrlc = "3.4"

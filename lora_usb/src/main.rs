@@ -1,9 +1,97 @@
 use std::{
     io::{self, Write},
+    process, thread,
     time::Duration,
 };
 
+use mqtt::{Client, Message, Receiver};
+use paho_mqtt as mqtt;
+
 use serialport::SerialPort;
+
+fn mqtt_connect(host: &str) -> (Client, Receiver<Option<Message>>) {
+    // Create the client. Use an ID for a persistent session.
+    // A real system should try harder to use a unique ID.
+    let create_opts = mqtt::CreateOptionsBuilder::new()
+        .server_uri(host)
+        .client_id("rust_sync_consumer")
+        .finalize();
+
+    let cli = mqtt::Client::new(create_opts).unwrap_or_else(|e| {
+        println!("Error creating the client: {:?}", e);
+        process::exit(1);
+    });
+
+    // Initialize the consumer before connecting
+    let rx = cli.start_consuming();
+
+    // Define the set of options for the connection
+    let lwt = mqtt::MessageBuilder::new()
+        .topic("test")
+        .payload("Sync consumer lost connection")
+        .finalize();
+
+    let conn_opts = mqtt::ConnectOptionsBuilder::new()
+        .keep_alive_interval(Duration::from_secs(20))
+        .clean_session(false)
+        .will_message(lwt)
+        .finalize();
+
+    let subscriptions = ["test", "hello"];
+    let qos = [1, 1];
+
+    // Make the connection to the broker
+    match cli.connect(conn_opts) {
+        Ok(rsp) => {
+            if let Some(conn_rsp) = rsp.connect_response() {
+                println!(
+                    "Connected to: '{}' with MQTT version {}",
+                    conn_rsp.server_uri, conn_rsp.mqtt_version
+                );
+                if conn_rsp.session_present {
+                    // Since our persistent session is already on the broker
+                    // we don't need to subscribe to the topics.
+                    println!("  w/ client session already present on broker.");
+                } else {
+                    // The server doesn't have a persistent session already
+                    // stored for us (1st connection?), so we need to subscribe
+                    // to the topics we want to receive.
+                    println!(
+                        "Subscribing to topics {:?} with requested QoS: {:?}...",
+                        subscriptions, qos
+                    );
+
+                    cli.subscribe_many(&subscriptions, &qos)
+                        .and_then(|rsp| {
+                            rsp.subscribe_many_response()
+                                .ok_or(mqtt::Error::General("Bad response"))
+                        })
+                        .map(|vqos| {
+                            println!("QoS granted: {:?}", vqos);
+                        })
+                        .unwrap_or_else(|err| {
+                            println!("Error subscribing to topics: {:?}", err);
+                            cli.disconnect(None).unwrap();
+                            process::exit(1);
+                        });
+                }
+            }
+        }
+        Err(e) => {
+            println!("Error connecting to the broker: {:?}", e);
+            process::exit(1);
+        }
+    }
+
+    // ^C handler will stop the consumer, breaking us out of the loop, below
+    let ctrlc_cli = cli.clone();
+    ctrlc::set_handler(move || {
+        ctrlc_cli.stop_consuming();
+    })
+    .expect("Error setting Ctrl-C handler");
+
+    (cli, rx)
+}
 
 fn serial_write(port: &mut Box<dyn SerialPort>, command: &str) {
     let string = String::from(command) + "\r\n";
@@ -18,13 +106,16 @@ fn serial_write(port: &mut Box<dyn SerialPort>, command: &str) {
     std::thread::sleep(Duration::from_millis((1000.0 / 9600_f32) as u64));
 }
 
+fn start_mqtt_thread(client: Client, rx: Receiver<Option<Message>>) -> std::thread::JoinHandle<()> {
+    thread::spawn(move || {
+        for msg in rx.iter().flatten() {
+            print!("{}", msg);
+        }
+    })
+}
+
 fn main() {
     println!("Hello, world!");
-
-    let ports = serialport::available_ports().expect("No ports found!");
-    for p in ports {
-        println!("{}", p.port_name);
-    }
 
     let port_name = "/dev/ttyUSB0";
     let baud_rate = 9600;
@@ -33,6 +124,10 @@ fn main() {
     let port = serialport::new(port_name, 9600)
         .timeout(Duration::from_millis(10))
         .open();
+
+    let (client, rx) = mqtt_connect("broker.hivemq.com:1883");
+
+    start_mqtt_thread(client, rx);
 
     match port {
         Ok(mut port) => {
@@ -73,7 +168,10 @@ fn main() {
                         }
                     }
                     Err(ref e) if e.kind() == io::ErrorKind::TimedOut => (),
-                    Err(e) => eprintln!("{:?}", e),
+                    Err(e) => {
+                        eprintln!("{:?}", e);
+                        break;
+                    }
                 }
             }
         }
