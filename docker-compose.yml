@@ -95,6 +95,10 @@ services:
       - "1880:1880"
     volumes:
       - ./nodered:/data
+      - ./serial-node:/usr/zitrone/node-red/serial-node
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0"
+    privileged: true
 
   grafana:
     image: grafana/grafana:10.2.0

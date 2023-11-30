@@ -1,0 +1,16 @@
+{
+  "name": "serial-node",
+  "version": "1.0.0",
+  "description": "NodeRed Node To Write To Serial Device",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Anton Petrov",
+  "license": "MIT",
+  "node-red": {
+    "nodes": {
+      "lower-case": "lower-case.js"
+    }
+  }
+}
