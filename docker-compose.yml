@@ -4,7 +4,7 @@ services:
   chirpstack:
     image: chirpstack/chirpstack:4
     command: -c /etc/chirpstack
-    restart: unless-stopped
+    restart: always
     volumes:
       - ./configuration/chirpstack:/etc/chirpstack
       - ./lorawan-devices:/opt/lorawan-devices
@@ -21,7 +21,7 @@ services:
 
   chirpstack-gateway-bridge:
     image: chirpstack/chirpstack-gateway-bridge:4
-    restart: unless-stopped
+    restart: always
     ports:
       - 1700:1700/udp
     volumes:
@@ -35,7 +35,7 @@ services:
   
   chirpstack-gateway-bridge-basicstation:
     image: chirpstack/chirpstack-gateway-bridge:4
-    restart: unless-stopped
+    restart: always
     command: -c /etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge-basicstation-eu868.toml
     ports:
       - 3001:3001
@@ -46,7 +46,7 @@ services:
 
   chirpstack-rest-api:
     image: chirpstack/chirpstack-rest-api:4
-    restart: unless-stopped
+    restart: always
     command: --server chirpstack:8080 --bind 0.0.0.0:8090 --insecure
     ports:
       - 8090:8090
@@ -55,7 +55,7 @@ services:
 
   postgres:
     image: postgres:14-alpine
-    restart: unless-stopped
+    restart: always
     volumes:
       - ./configuration/postgresql/initdb:/docker-entrypoint-initdb.d
       - postgresqldata:/var/lib/postgresql/data
@@ -64,13 +64,13 @@ services:
 
   redis:
     image: redis:7-alpine
-    restart: unless-stopped
+    restart: always
     volumes:
       - redisdata:/data
 
   mosquitto:
     image: eclipse-mosquitto:2
-    restart: unless-stopped
+    restart: always
     ports:
       - 1883:1883
     volumes: 
