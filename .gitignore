@@ -9,7 +9,8 @@ nodered
 
 # data folder
 /data
-/lorawan-devices
+/lorawan-
+/lora_usb
 
 *.pem
 *.csr
