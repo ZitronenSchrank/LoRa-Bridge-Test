@@ -1,0 +1,606 @@
+[
+    {
+        "id": "cefe46de0f9e8bf2",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "43920f70bb67f7a3",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "a07a3a816eaec58c",
+        "type": "subflow",
+        "name": "LA66 Send Uplink",
+        "info": "",
+        "category": "LA66",
+        "in": [
+            {
+                "x": 280,
+                "y": 260,
+                "wires": [
+                    {
+                        "id": "8fb6b348aa5150d7"
+                    },
+                    {
+                        "id": "becea286b80c26c7"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 580,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "1ed3456d086a37d7",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {
+            "module": "LA66"
+        },
+        "color": "#D7D7A0",
+        "icon": "font-awesome/fa-cloud-upload"
+    },
+    {
+        "id": "6b3093f604f98391",
+        "type": "subflow",
+        "name": "LA66 Receive Downlink",
+        "info": "",
+        "category": "LA66",
+        "in": [],
+        "out": [
+            {
+                "x": 1160,
+                "y": 100,
+                "wires": [
+                    {
+                        "id": "fb2d7f6a31fbd516",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#D7D7A0",
+        "icon": "font-awesome/fa-cloud-download"
+    },
+    {
+        "id": "f7c4ff8c9da31da4",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "mosquitto",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "584f6caa86cf7a5f",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": "8086",
+        "protocol": "http",
+        "database": "database",
+        "name": "Influx",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://influxdb:8086",
+        "rejectUnauthorized": false
+    },
+    {
+        "id": "86c11333eddb56d2",
+        "type": "serial-port",
+        "name": "LoRa-USB",
+        "serialport": "/dev/ttyUSB0",
+        "serialbaud": "9600",
+        "databits": "8",
+        "parity": "none",
+        "stopbits": "1",
+        "waitfor": "",
+        "dtr": "none",
+        "rts": "none",
+        "cts": "none",
+        "dsr": "none",
+        "newline": "\\r\\n",
+        "bin": "false",
+        "out": "char",
+        "addchar": "\\r\\n",
+        "responsetimeout": "500"
+    },
+    {
+        "id": "69ea3ec72677a2a7",
+        "type": "function",
+        "z": "a07a3a816eaec58c",
+        "name": "SEND MSG",
+        "func": "\n// https://developer.mozilla.org/en-US/docs/Glossary/Base64\nfunction base64ToBytes(base64) {\n    const binString = Buffer.from(base64, 'base64');\n    \n    return binString\n}\n\n// https://stackoverflow.com/questions/34309988/byte-array-to-hex-string-conversion-in-javascript#34310051\nfunction toHexString(byteArray) {\n    return Array.from(byteArray, function (byte) {\n        return ('0' + (byte & 0xFF).toString(16)).slice(-2);\n    }).join('')\n}\n\nconst data = msg.payload.msg\nconst bytes = base64ToBytes(data.rawData)\nlet sendString = \"AT+SENDB=\"\n\nsendString += (data.confirmed ? \"1\" : \"0\") + \",\"\nsendString += data.fPort + \",\"\nsendString += bytes.length + \",\"\nsendString += toHexString(bytes)\n\nmsg.payload = sendString\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 280,
+        "wires": [
+            [
+                "7c8386a2d17a03e2"
+            ]
+        ]
+    },
+    {
+        "id": "18f13fe6e5944774",
+        "type": "debug",
+        "z": "a07a3a816eaec58c",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "3bf34f308eab24a3",
+        "type": "serial in",
+        "z": "a07a3a816eaec58c",
+        "name": "Read",
+        "serial": "86c11333eddb56d2",
+        "x": 230,
+        "y": 120,
+        "wires": [
+            [
+                "1ed3456d086a37d7",
+                "77f58cad241ab74c"
+            ]
+        ]
+    },
+    {
+        "id": "b393b45e25327a33",
+        "type": "serial out",
+        "z": "a07a3a816eaec58c",
+        "name": "Send Message",
+        "serial": "86c11333eddb56d2",
+        "x": 1280,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "1ed3456d086a37d7",
+        "type": "function",
+        "z": "a07a3a816eaec58c",
+        "name": "Is Send Ok",
+        "func": "if(msg.payload.includes(\"rxDone\")){\n    msg.payload = msg.payload.trim()\n    return msg;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7c8386a2d17a03e2",
+        "type": "delay",
+        "z": "a07a3a816eaec58c",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "10",
+        "timeoutUnits": "milliseconds",
+        "rate": "1",
+        "nbRateUnits": "9",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1040,
+        "y": 280,
+        "wires": [
+            [
+                "b393b45e25327a33"
+            ]
+        ]
+    },
+    {
+        "id": "8e844b48ae104167",
+        "type": "serial out",
+        "z": "a07a3a816eaec58c",
+        "name": "Send IsJoined",
+        "serial": "86c11333eddb56d2",
+        "x": 900,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "8fb6b348aa5150d7",
+        "type": "change",
+        "z": "a07a3a816eaec58c",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "msg",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 440,
+        "y": 220,
+        "wires": [
+            [
+                "54b28727fd035b65"
+            ]
+        ]
+    },
+    {
+        "id": "77f58cad241ab74c",
+        "type": "function",
+        "z": "a07a3a816eaec58c",
+        "name": "Is Join Ok?",
+        "func": "if(msg.payload.includes(\"OK\")){\n    msg.complete = true;\n    return msg;\n}\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 140,
+        "wires": [
+            [
+                "54b28727fd035b65"
+            ]
+        ]
+    },
+    {
+        "id": "54b28727fd035b65",
+        "type": "join",
+        "z": "a07a3a816eaec58c",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 650,
+        "y": 260,
+        "wires": [
+            [
+                "69ea3ec72677a2a7"
+            ]
+        ]
+    },
+    {
+        "id": "becea286b80c26c7",
+        "type": "function",
+        "z": "a07a3a816eaec58c",
+        "name": "Is Joined? ",
+        "func": "msg.payload = \"AT+JOIN?\"\nmsg.topic = \"Command\"\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 300,
+        "wires": [
+            [
+                "54b28727fd035b65",
+                "c621c96646b73326"
+            ]
+        ]
+    },
+    {
+        "id": "c621c96646b73326",
+        "type": "delay",
+        "z": "a07a3a816eaec58c",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "10",
+        "timeoutUnits": "milliseconds",
+        "rate": "1",
+        "nbRateUnits": "10",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 650,
+        "y": 380,
+        "wires": [
+            [
+                "8e844b48ae104167"
+            ]
+        ]
+    },
+    {
+        "id": "b40b6a3d0b65dc0b",
+        "type": "serial in",
+        "z": "6b3093f604f98391",
+        "name": "LA66 Receive",
+        "serial": "86c11333eddb56d2",
+        "x": 210,
+        "y": 100,
+        "wires": [
+            [
+                "589c60b4bb41b418"
+            ]
+        ]
+    },
+    {
+        "id": "589c60b4bb41b418",
+        "type": "function",
+        "z": "6b3093f604f98391",
+        "name": "Downlink Received?",
+        "func": "if(msg.payload.includes(\"AT+RECVB=?\")){\n    msg.payload = \"AT+RECVB=?\"\n    return msg;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 80,
+        "wires": [
+            [
+                "82902624940235d7"
+            ]
+        ]
+    },
+    {
+        "id": "82902624940235d7",
+        "type": "serial request",
+        "z": "6b3093f604f98391",
+        "name": "Get Downlink Payload",
+        "serial": "86c11333eddb56d2",
+        "x": 700,
+        "y": 100,
+        "wires": [
+            [
+                "fb2d7f6a31fbd516"
+            ]
+        ]
+    },
+    {
+        "id": "fb2d7f6a31fbd516",
+        "type": "function",
+        "z": "6b3093f604f98391",
+        "name": "Extract Payload And Port",
+        "func": "// Example Input Payload: \\n1:000000\n\nconst data = msg.payload.trim().split(\":\")\nmsg.payload = data[1]\nmsg.port = data[0]\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 970,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4dc48e3252d6ba79",
+        "type": "mqtt in",
+        "z": "cefe46de0f9e8bf2",
+        "name": "",
+        "topic": "application/+/device/+/event/up",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "f7c4ff8c9da31da4",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 350,
+        "y": 420,
+        "wires": [
+            [
+                "f2075753f604a2eb",
+                "5309e2e0f5365605"
+            ]
+        ]
+    },
+    {
+        "id": "5309e2e0f5365605",
+        "type": "debug",
+        "z": "cefe46de0f9e8bf2",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 800,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "bdf194cf06eabce6",
+        "type": "influxdb out",
+        "z": "cefe46de0f9e8bf2",
+        "influxdb": "584f6caa86cf7a5f",
+        "name": "",
+        "measurement": "",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "lora",
+        "bucket": "lora-test",
+        "x": 810,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "f2075753f604a2eb",
+        "type": "function",
+        "z": "cefe46de0f9e8bf2",
+        "name": "function 1",
+        "func": "const deviceInfo = msg.payload.deviceInfo;\nconst payload = msg.payload.object;\nconst rxInfo = msg.payload.rxInfo[0];\nconst txInfo = msg.payload.txInfo.modulation.lora;\n\n\nlet data = {\n    ...(payload),\n\n    sf: txInfo.spreadingFactor,\n    bandwith: txInfo.bandwidth,\n    rssi: rxInfo.rssi,\n    snr: rxInfo.snr,\n    frameCounter: msg.payload.fCnt,\n}\n\nmsg.measurement = deviceInfo.deviceName;\nmsg.payload = data;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 600,
+        "y": 420,
+        "wires": [
+            [
+                "5309e2e0f5365605",
+                "bdf194cf06eabce6"
+            ]
+        ]
+    },
+    {
+        "id": "6bb76d110d9369fa",
+        "type": "debug",
+        "z": "43920f70bb67f7a3",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 540,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "ac1c0dabc09faf82",
+        "type": "subflow:a07a3a816eaec58c",
+        "z": "43920f70bb67f7a3",
+        "name": "",
+        "x": 790,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "95c7f105e2620929",
+        "type": "mqtt in",
+        "z": "43920f70bb67f7a3",
+        "name": "",
+        "topic": "application/+/device/70b3d5581000003d/event/up",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "f7c4ff8c9da31da4",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 180,
+        "y": 620,
+        "wires": [
+            [
+                "71c696223a53be8b"
+            ]
+        ]
+    },
+    {
+        "id": "71c696223a53be8b",
+        "type": "function",
+        "z": "43920f70bb67f7a3",
+        "name": "function 2",
+        "func": "const deviceInfo = msg.payload.deviceInfo;\nconst confirmed = msg.payload.confirmed\nconst rawData = msg.payload.data\nconst fPort = msg.payload.fPort\nconst devEui = deviceInfo.devEui\n\nlet data = {\n    confirmed: confirmed,\n    rawData: rawData,\n    fPort: fPort,\n    devEui: devEui,\n}\n\nmsg.payload = data;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 540,
+        "y": 620,
+        "wires": [
+            [
+                "ac1c0dabc09faf82"
+            ]
+        ]
+    },
+    {
+        "id": "8e8527c443702c53",
+        "type": "subflow:6b3093f604f98391",
+        "z": "43920f70bb67f7a3",
+        "name": "",
+        "x": 160,
+        "y": 780,
+        "wires": [
+            [
+                "6bb76d110d9369fa"
+            ]
+        ]
+    }
+]

@@ -1,7 +1,11 @@
 
 grafana-provisioning
 influxdb
-nodered
+
+nodered/.config*
+nodered/.npm
+nodered/lib
+nodered/node_modules
 
 # hidden files, exluding gitattributes
 .*
