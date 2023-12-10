@@ -86,6 +86,8 @@ services:
       - INFLUXDB_DB=db0
       - INFLUXDB_ADMIN_USER=root
       - INFLUXDB_ADMIN_PASSWORD=password123
+    depends_on:
+      - chirpstack
 
   nodered: 
     image: nodered/node-red:3.1.0-18
@@ -99,6 +101,8 @@ services:
     devices:
       - "/dev/ttyUSB0:/dev/ttyUSB0"
     privileged: true
+    depends_on:
+      - influxdb
 
   grafana:
     image: grafana/grafana:10.2.0
