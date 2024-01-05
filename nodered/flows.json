@@ -81,9 +81,9 @@
     {
         "id": "a5abbb3a16eadc3a",
         "type": "subflow",
-        "name": "Code Dev Eui",
+        "name": "Hash DevEui",
         "info": "",
-        "category": "",
+        "category": "DevEui Hash",
         "in": [
             {
                 "x": 140,
@@ -109,14 +109,15 @@
         ],
         "env": [],
         "meta": {},
-        "color": "#DDAA99"
+        "color": "#3FADB5",
+        "icon": "node-red/hash.svg"
     },
     {
         "id": "582ff7246177f8ba",
         "type": "subflow",
         "name": "Pack Payload",
         "info": "",
-        "category": "",
+        "category": "DevEui Hash",
         "in": [
             {
                 "x": 60,
@@ -142,7 +143,88 @@
         ],
         "env": [],
         "meta": {},
-        "color": "#DDAA99"
+        "color": "#3FADB5",
+        "icon": "font-awesome/fa-compress"
+    },
+    {
+        "id": "f76fbcb904e1309a",
+        "type": "subflow",
+        "name": "Save Hash and Get Eui",
+        "info": "",
+        "category": "DevEui Hash",
+        "in": [
+            {
+                "x": 340,
+                "y": 240,
+                "wires": [
+                    {
+                        "id": "7ff0c5aee3d88df5"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1060,
+                "y": 200,
+                "wires": [
+                    {
+                        "id": "7ff0c5aee3d88df5",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#3FADB5",
+        "icon": "font-awesome/fa-cloud"
+    },
+    {
+        "id": "fd94572cb0e8888e",
+        "type": "subflow",
+        "name": "Forward All LA66 Downlinks",
+        "info": "",
+        "category": "LA66",
+        "in": [
+            {
+                "x": 60,
+                "y": 200,
+                "wires": [
+                    {
+                        "id": "cf7c41dee34022ad"
+                    }
+                ]
+            }
+        ],
+        "out": [],
+        "env": [],
+        "meta": {},
+        "color": "#D7D7A0",
+        "icon": "font-awesome/fa-mail-forward"
+    },
+    {
+        "id": "5d0bac2844046b31",
+        "type": "subflow",
+        "name": "Forward LA66 Downlink",
+        "info": "",
+        "category": "LA66",
+        "in": [
+            {
+                "x": 60,
+                "y": 180,
+                "wires": [
+                    {
+                        "id": "5a19c3f98d422c9e"
+                    }
+                ]
+            }
+        ],
+        "out": [],
+        "env": [],
+        "meta": {},
+        "color": "#D7D7A0",
+        "icon": "font-awesome/fa-mail-forward"
     },
     {
         "id": "f7c4ff8c9da31da4",
@@ -225,27 +307,9 @@
         "y": 280,
         "wires": [
             [
-                "7c8386a2d17a03e2",
-                "18f13fe6e5944774"
+                "7c8386a2d17a03e2"
             ]
         ]
-    },
-    {
-        "id": "18f13fe6e5944774",
-        "type": "debug",
-        "z": "a07a3a816eaec58c",
-        "name": "debug 3",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 820,
-        "y": 100,
-        "wires": []
     },
     {
         "id": "3bf34f308eab24a3",
@@ -396,8 +460,7 @@
         "y": 260,
         "wires": [
             [
-                "69ea3ec72677a2a7",
-                "18f13fe6e5944774"
+                "69ea3ec72677a2a7"
             ]
         ]
     },
@@ -510,8 +573,28 @@
         "x": 970,
         "y": 80,
         "wires": [
-            []
+            [
+                "c25ed181938df685"
+            ]
         ]
+    },
+    {
+        "id": "c25ed181938df685",
+        "type": "mqtt out",
+        "z": "6b3093f604f98391",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "f7c4ff8c9da31da4",
+        "x": 1170,
+        "y": 280,
+        "wires": []
     },
     {
         "id": "937df319ac6aca3a",
@@ -556,11 +639,208 @@
         "type": "subflow:a5abbb3a16eadc3a",
         "z": "582ff7246177f8ba",
         "name": "",
-        "x": 430,
+        "x": 420,
         "y": 80,
         "wires": [
             []
         ]
+    },
+    {
+        "id": "58bfaad5a77534f5",
+        "type": "mqtt in",
+        "z": "f76fbcb904e1309a",
+        "name": "",
+        "topic": "application/+/device/+/event/up",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "f7c4ff8c9da31da4",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 230,
+        "y": 100,
+        "wires": [
+            [
+                "797dd7fe1efdf97c"
+            ]
+        ]
+    },
+    {
+        "id": "7ff0c5aee3d88df5",
+        "type": "function",
+        "z": "f76fbcb904e1309a",
+        "name": "Save Hash and Get Eui",
+        "func": "const hash = msg.payload.hash ? \"0\" + msg.payload.hash.toString(16).slice(-2) : undefined;\nconst devEui = msg.payload.devEui;\n\nlet list = context.get(\"list\")||{};\n\n// Message Contains Hash and DevEui - Save\nif(hash && devEui){\n    if(!list[hash]){\n        list[hash] = devEui;\n        context.set(\"list\", list);\n    }\n}\n\n// Message Is A String - Return DevEui\nif((typeof msg.payload === 'string' || msg.payload instanceof String)){\n    const h = msg.payload.substring(0, 2)\n    msg[\"devEui\"] = list[h]\n    return msg;\n}\n\n\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "589e47081a75711f",
+        "type": "subflow:a5abbb3a16eadc3a",
+        "z": "f76fbcb904e1309a",
+        "name": "",
+        "x": 630,
+        "y": 180,
+        "wires": [
+            [
+                "7ff0c5aee3d88df5"
+            ]
+        ]
+    },
+    {
+        "id": "797dd7fe1efdf97c",
+        "type": "function",
+        "z": "f76fbcb904e1309a",
+        "name": "Get Dev Eui",
+        "func": "const deviceInfo = msg.payload.deviceInfo;\nconst devEui = deviceInfo.devEui\nmsg.payload = {devEui: devEui};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 140,
+        "wires": [
+            [
+                "589e47081a75711f"
+            ]
+        ]
+    },
+    {
+        "id": "cf7c41dee34022ad",
+        "type": "subflow:f76fbcb904e1309a",
+        "z": "fd94572cb0e8888e",
+        "name": "",
+        "x": 240,
+        "y": 220,
+        "wires": [
+            [
+                "168dda8d71eab3f7"
+            ]
+        ]
+    },
+    {
+        "id": "168dda8d71eab3f7",
+        "type": "subflow:5d0bac2844046b31",
+        "z": "fd94572cb0e8888e",
+        "name": "",
+        "x": 510,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "dd519ebe2968db2d",
+        "type": "debug",
+        "z": "5d0bac2844046b31",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 740,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "5a19c3f98d422c9e",
+        "type": "function",
+        "z": "5d0bac2844046b31",
+        "name": "PayloadToBase64",
+        "func": "let data = msg.payload\n\nif(data.length % 2 === 0 && data.length !== 0){\n    data = data.substr(2)\n    let hexArray = []\n    for(let i = 0; i < data.length; i = i + 2){\n        const hex = data.charAt(i) + data.charAt(i+1);\n        console.log(hex);\n        hexArray.push(parseInt(hex, 16))\n    }\n    const buff = Buffer.from(hexArray);\n    const base64String = buff.toString('base64');\n    \n    msg.payload = base64String;\n\n    return msg;\n\n}\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 230,
+        "y": 180,
+        "wires": [
+            [
+                "9d25ad936db3a425"
+            ]
+        ]
+    },
+    {
+        "id": "9d25ad936db3a425",
+        "type": "function",
+        "z": "5d0bac2844046b31",
+        "name": "Build MQTT Downlink",
+        "func": "msg.topic = \"application/93d7f4c6-6061-422b-88d6-0a25358528bd/device/\" + msg.devEui + \"/command/down\"\nmsg.payload = {\n    \"devEui\": msg.devEui,\n    \"fPort\": msg.port,\n    \"data\": msg.payload\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 120,
+        "wires": [
+            [
+                "fef07e3102b16154"
+            ]
+        ]
+    },
+    {
+        "id": "fef07e3102b16154",
+        "type": "change",
+        "z": "5d0bac2844046b31",
+        "name": "Set confirmed",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload.confirmed",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 660,
+        "y": 180,
+        "wires": [
+            [
+                "dd519ebe2968db2d",
+                "52a601ee3b19fc6a"
+            ]
+        ]
+    },
+    {
+        "id": "52a601ee3b19fc6a",
+        "type": "mqtt out",
+        "z": "5d0bac2844046b31",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "f7c4ff8c9da31da4",
+        "x": 850,
+        "y": 240,
+        "wires": []
     },
     {
         "id": "4dc48e3252d6ba79",
@@ -576,11 +856,10 @@
         "rh": 0,
         "inputs": 0,
         "x": 350,
-        "y": 420,
+        "y": 440,
         "wires": [
             [
-                "f2075753f604a2eb",
-                "ba7df7ae0ee81ce2"
+                "f2075753f604a2eb"
             ]
         ]
     },
@@ -599,7 +878,7 @@
         "org": "lora",
         "bucket": "lora-test",
         "x": 810,
-        "y": 460,
+        "y": 440,
         "wires": []
     },
     {
@@ -621,34 +900,6 @@
                 "bdf194cf06eabce6"
             ]
         ]
-    },
-    {
-        "id": "ba7df7ae0ee81ce2",
-        "type": "subflow:582ff7246177f8ba",
-        "z": "cefe46de0f9e8bf2",
-        "name": "",
-        "x": 640,
-        "y": 240,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "6bb76d110d9369fa",
-        "type": "debug",
-        "z": "43920f70bb67f7a3",
-        "name": "debug 2",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 540,
-        "y": 780,
-        "wires": []
     },
     {
         "id": "ac1c0dabc09faf82",
@@ -691,7 +942,7 @@
         "y": 780,
         "wires": [
             [
-                "6bb76d110d9369fa"
+                "9a2cba20cc9d5d7e"
             ]
         ]
     },
@@ -700,7 +951,7 @@
         "type": "mqtt in",
         "z": "43920f70bb67f7a3",
         "name": "",
-        "topic": "application/+/device/sender/up",
+        "topic": "application/+/device/relay/up",
         "qos": "2",
         "datatype": "auto-detect",
         "broker": "f7c4ff8c9da31da4",
@@ -734,10 +985,21 @@
         "type": "subflow:a5abbb3a16eadc3a",
         "z": "43920f70bb67f7a3",
         "name": "",
-        "x": 610,
+        "x": 600,
         "y": 500,
         "wires": [
-            []
+            [
+                "ac1c0dabc09faf82"
+            ]
         ]
+    },
+    {
+        "id": "9a2cba20cc9d5d7e",
+        "type": "subflow:fd94572cb0e8888e",
+        "z": "43920f70bb67f7a3",
+        "name": "",
+        "x": 460,
+        "y": 780,
+        "wires": []
     }
 ]
