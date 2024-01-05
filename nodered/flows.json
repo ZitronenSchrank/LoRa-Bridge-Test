@@ -79,6 +79,72 @@
         "icon": "font-awesome/fa-cloud-download"
     },
     {
+        "id": "a5abbb3a16eadc3a",
+        "type": "subflow",
+        "name": "Code Dev Eui",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 140,
+                "y": 260,
+                "wires": [
+                    {
+                        "id": "937df319ac6aca3a"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 420,
+                "y": 260,
+                "wires": [
+                    {
+                        "id": "937df319ac6aca3a",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#DDAA99"
+    },
+    {
+        "id": "582ff7246177f8ba",
+        "type": "subflow",
+        "name": "Pack Payload",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 60,
+                "y": 100,
+                "wires": [
+                    {
+                        "id": "71c696223a53be8b"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 580,
+                "y": 100,
+                "wires": [
+                    {
+                        "id": "b54225f956107e04",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#DDAA99"
+    },
+    {
         "id": "f7c4ff8c9da31da4",
         "type": "mqtt-broker",
         "name": "",
@@ -148,7 +214,7 @@
         "type": "function",
         "z": "a07a3a816eaec58c",
         "name": "SEND MSG",
-        "func": "\n// https://developer.mozilla.org/en-US/docs/Glossary/Base64\nfunction base64ToBytes(base64) {\n    const binString = Buffer.from(base64, 'base64');\n    \n    return binString\n}\n\n// https://stackoverflow.com/questions/34309988/byte-array-to-hex-string-conversion-in-javascript#34310051\nfunction toHexString(byteArray) {\n    return Array.from(byteArray, function (byte) {\n        return ('0' + (byte & 0xFF).toString(16)).slice(-2);\n    }).join('')\n}\n\nconst data = msg.payload.msg\nconst bytes = base64ToBytes(data.rawData)\nlet sendString = \"AT+SENDB=\"\n\nsendString += (data.confirmed ? \"1\" : \"0\") + \",\"\nsendString += data.fPort + \",\"\nsendString += bytes.length + \",\"\nsendString += toHexString(bytes)\n\nmsg.payload = sendString\nreturn msg;",
+        "func": "\n// https://developer.mozilla.org/en-US/docs/Glossary/Base64\nfunction base64ToBytes(base64) {\n    const binString = Buffer.from(base64, 'base64');\n    \n    return binString\n}\n\nfunction byteToString(byte){\n    return ('0' + (byte & 0xFF).toString(16)).slice(-2);\n}\n\n// https://stackoverflow.com/questions/34309988/byte-array-to-hex-string-conversion-in-javascript#34310051\nfunction toHexString(byteArray) {\n    return Array.from(byteArray, function (byte) {\n        return byteToString(byte);\n    }).join('')\n}\n\nconst data = msg.payload.msg\nconst bytes = base64ToBytes(data.rawData)\nlet sendString = \"AT+SENDB=\"\n\nsendString += (data.confirmed ? \"1\" : \"0\") + \",\"\nsendString += data.fPort + \",\"\nsendString += (bytes.length + 1) + \",\"\nsendString += byteToString(data.hash)\nsendString += toHexString(bytes)\n\nmsg.payload = sendString\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -159,7 +225,8 @@
         "y": 280,
         "wires": [
             [
-                "7c8386a2d17a03e2"
+                "7c8386a2d17a03e2",
+                "18f13fe6e5944774"
             ]
         ]
     },
@@ -172,7 +239,8 @@
         "tosidebar": true,
         "console": false,
         "tostatus": false,
-        "complete": "false",
+        "complete": "payload",
+        "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
         "x": 820,
@@ -328,7 +396,8 @@
         "y": 260,
         "wires": [
             [
-                "69ea3ec72677a2a7"
+                "69ea3ec72677a2a7",
+                "18f13fe6e5944774"
             ]
         ]
     },
@@ -445,6 +514,55 @@
         ]
     },
     {
+        "id": "937df319ac6aca3a",
+        "type": "function",
+        "z": "a5abbb3a16eadc3a",
+        "name": "Decoder",
+        "func": "const devEui = msg.payload.devEui;\n\nif(devEui.length === 16){\n    const charArray = [...devEui];\n    let hash = 0; \n\n    charArray.forEach(function(element) {\n        hash = hash ^ element;\n    });\n\n    msg.payload = {\n        ...msg.payload,\n        hash: hash\n    }\n    return msg;\n}\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "71c696223a53be8b",
+        "type": "function",
+        "z": "582ff7246177f8ba",
+        "name": "Build Payload",
+        "func": "const deviceInfo = msg.payload.deviceInfo;\nconst confirmed = msg.payload.confirmed\nconst rawData = msg.payload.data\nconst fPort = msg.payload.fPort\nconst devEui = deviceInfo.devEui\n\nlet data = {\n    confirmed: confirmed,\n    rawData: rawData,\n    fPort: fPort,\n    devEui: devEui,\n}\n\nmsg.payload = data;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 220,
+        "y": 120,
+        "wires": [
+            [
+                "b54225f956107e04"
+            ]
+        ]
+    },
+    {
+        "id": "b54225f956107e04",
+        "type": "subflow:a5abbb3a16eadc3a",
+        "z": "582ff7246177f8ba",
+        "name": "",
+        "x": 430,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
         "id": "4dc48e3252d6ba79",
         "type": "mqtt in",
         "z": "cefe46de0f9e8bf2",
@@ -462,25 +580,9 @@
         "wires": [
             [
                 "f2075753f604a2eb",
-                "5309e2e0f5365605"
+                "ba7df7ae0ee81ce2"
             ]
         ]
-    },
-    {
-        "id": "5309e2e0f5365605",
-        "type": "debug",
-        "z": "cefe46de0f9e8bf2",
-        "name": "debug 1",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 800,
-        "y": 380,
-        "wires": []
     },
     {
         "id": "bdf194cf06eabce6",
@@ -516,9 +618,19 @@
         "y": 420,
         "wires": [
             [
-                "5309e2e0f5365605",
                 "bdf194cf06eabce6"
             ]
+        ]
+    },
+    {
+        "id": "ba7df7ae0ee81ce2",
+        "type": "subflow:582ff7246177f8ba",
+        "z": "cefe46de0f9e8bf2",
+        "name": "",
+        "x": 640,
+        "y": 240,
+        "wires": [
+            []
         ]
     },
     {
@@ -543,7 +655,7 @@
         "type": "subflow:a07a3a816eaec58c",
         "z": "43920f70bb67f7a3",
         "name": "",
-        "x": 790,
+        "x": 990,
         "y": 620,
         "wires": [
             []
@@ -566,27 +678,7 @@
         "y": 620,
         "wires": [
             [
-                "71c696223a53be8b"
-            ]
-        ]
-    },
-    {
-        "id": "71c696223a53be8b",
-        "type": "function",
-        "z": "43920f70bb67f7a3",
-        "name": "function 2",
-        "func": "const deviceInfo = msg.payload.deviceInfo;\nconst confirmed = msg.payload.confirmed\nconst rawData = msg.payload.data\nconst fPort = msg.payload.fPort\nconst devEui = deviceInfo.devEui\n\nlet data = {\n    confirmed: confirmed,\n    rawData: rawData,\n    fPort: fPort,\n    devEui: devEui,\n}\n\nmsg.payload = data;\n\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 540,
-        "y": 620,
-        "wires": [
-            [
-                "ac1c0dabc09faf82"
+                "c04ec8f78740a975"
             ]
         ]
     },
@@ -601,6 +693,51 @@
             [
                 "6bb76d110d9369fa"
             ]
+        ]
+    },
+    {
+        "id": "cc7f5ec4fd4d3175",
+        "type": "mqtt in",
+        "z": "43920f70bb67f7a3",
+        "name": "",
+        "topic": "application/+/device/sender/up",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "f7c4ff8c9da31da4",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 360,
+        "y": 480,
+        "wires": [
+            [
+                "f273a55573f1cecc"
+            ]
+        ]
+    },
+    {
+        "id": "c04ec8f78740a975",
+        "type": "subflow:582ff7246177f8ba",
+        "z": "43920f70bb67f7a3",
+        "name": "",
+        "x": 620,
+        "y": 600,
+        "wires": [
+            [
+                "ac1c0dabc09faf82"
+            ]
+        ]
+    },
+    {
+        "id": "f273a55573f1cecc",
+        "type": "subflow:a5abbb3a16eadc3a",
+        "z": "43920f70bb67f7a3",
+        "name": "",
+        "x": 610,
+        "y": 500,
+        "wires": [
+            []
         ]
     }
 ]
