@@ -23,7 +23,7 @@
         "category": "LA66",
         "in": [
             {
-                "x": 280,
+                "x": 380,
                 "y": 260,
                 "wires": [
                     {
@@ -37,7 +37,7 @@
         ],
         "out": [
             {
-                "x": 580,
+                "x": 700,
                 "y": 40,
                 "wires": [
                     {
@@ -227,6 +227,30 @@
         "icon": "font-awesome/fa-mail-forward"
     },
     {
+        "id": "89be9fec0ab36cdd",
+        "type": "subflow",
+        "name": "Read Serial LA66",
+        "info": "",
+        "category": "LA66",
+        "in": [],
+        "out": [
+            {
+                "x": 560,
+                "y": 80,
+                "wires": [
+                    {
+                        "id": "0a06d69bff2c0991",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#C0C0C0",
+        "icon": "node-red/arrow-in.svg"
+    },
+    {
         "id": "f7c4ff8c9da31da4",
         "type": "mqtt-broker",
         "name": "",
@@ -303,26 +327,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 830,
+        "x": 950,
         "y": 280,
         "wires": [
             [
                 "7c8386a2d17a03e2"
-            ]
-        ]
-    },
-    {
-        "id": "3bf34f308eab24a3",
-        "type": "serial in",
-        "z": "a07a3a816eaec58c",
-        "name": "Read",
-        "serial": "86c11333eddb56d2",
-        "x": 230,
-        "y": 120,
-        "wires": [
-            [
-                "1ed3456d086a37d7",
-                "77f58cad241ab74c"
             ]
         ]
     },
@@ -332,7 +341,7 @@
         "z": "a07a3a816eaec58c",
         "name": "Send Message",
         "serial": "86c11333eddb56d2",
-        "x": 1280,
+        "x": 1400,
         "y": 260,
         "wires": []
     },
@@ -341,14 +350,14 @@
         "type": "function",
         "z": "a07a3a816eaec58c",
         "name": "Is Send Ok",
-        "func": "if(msg.payload.includes(\"rxDone\")){\n    msg.payload = msg.payload.trim()\n    return msg;\n}\n",
+        "func": "if(msg.payload && msg.payload.includes(\"txDone\")){\n    return msg;\n}\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 450,
+        "x": 570,
         "y": 80,
         "wires": [
             []
@@ -371,7 +380,7 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1040,
+        "x": 1160,
         "y": 280,
         "wires": [
             [
@@ -385,7 +394,7 @@
         "z": "a07a3a816eaec58c",
         "name": "Send IsJoined",
         "serial": "86c11333eddb56d2",
-        "x": 900,
+        "x": 1020,
         "y": 360,
         "wires": []
     },
@@ -408,7 +417,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 440,
+        "x": 560,
         "y": 220,
         "wires": [
             [
@@ -421,19 +430,20 @@
         "type": "function",
         "z": "a07a3a816eaec58c",
         "name": "Is Join Ok?",
-        "func": "if(msg.payload.includes(\"OK\")){\n    msg.complete = true;\n    return msg;\n}\n\n",
-        "outputs": 1,
+        "func": "if(msg.payload[0] === \"Join network\" && msg.payload[2] === \"OK\"){\n    msg.complete = true;\n    return [msg, null];\n}\n\n",
+        "outputs": 2,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 450,
+        "x": 570,
         "y": 140,
         "wires": [
             [
                 "54b28727fd035b65"
-            ]
+            ],
+            []
         ]
     },
     {
@@ -456,7 +466,7 @@
         "reduceInit": "",
         "reduceInitType": "",
         "reduceFixup": "",
-        "x": 650,
+        "x": 770,
         "y": 260,
         "wires": [
             [
@@ -476,7 +486,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 450,
+        "x": 570,
         "y": 300,
         "wires": [
             [
@@ -502,11 +512,25 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 650,
+        "x": 770,
         "y": 380,
         "wires": [
             [
                 "8e844b48ae104167"
+            ]
+        ]
+    },
+    {
+        "id": "2a65be0a6294cbec",
+        "type": "subflow:89be9fec0ab36cdd",
+        "z": "a07a3a816eaec58c",
+        "name": "Read Serial LA66",
+        "x": 200,
+        "y": 160,
+        "wires": [
+            [
+                "1ed3456d086a37d7",
+                "77f58cad241ab74c"
             ]
         ]
     },
@@ -861,6 +885,57 @@
         "wires": []
     },
     {
+        "id": "766c807c86703995",
+        "type": "debug",
+        "z": "89be9fec0ab36cdd",
+        "name": "debug 7",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "0a06d69bff2c0991",
+        "type": "function",
+        "z": "89be9fec0ab36cdd",
+        "name": "Combine Messages",
+        "func": "let buildMsg = context.get(\"msg\")||[];\nconst isNewMsg = buildMsg.length === 0;\nconst END_MESSAGES = [\"OK\", \"AT_ERROR\", \"AT_PARAM_ERROR\", \"AT_BUSY_ERROR\", \"AT_TEST_PARAM_OVERFLOW\", \"AT_NO_NETWORK_JOINED\", \"AT_RX_ERROR\"];\n\nconst payload = msg.payload.trim()\n\nfunction checkFinish(message){\n    if (END_MESSAGES.includes(payload) || payload === \"rxTimeout\" || payload === \"txDone\"  || payload === \"rxDone\") {\n        msg.payload = buildMsg;\n        return { payload: buildMsg };\n    } else {\n        context.set(\"msg\", buildMsg);\n        return null;\n    }\n}\n\n\nbuildMsg.push(payload)\nconst retVal = checkFinish(buildMsg)\nif(retVal !== null){\n    context.set(\"msg\", []);\n    return retVal;\n}\n\n\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 80,
+        "wires": [
+            [
+                "766c807c86703995"
+            ]
+        ]
+    },
+    {
+        "id": "3bf34f308eab24a3",
+        "type": "serial in",
+        "z": "89be9fec0ab36cdd",
+        "name": "Read",
+        "serial": "86c11333eddb56d2",
+        "x": 190,
+        "y": 80,
+        "wires": [
+            [
+                "0a06d69bff2c0991"
+            ]
+        ]
+    },
+    {
         "id": "4dc48e3252d6ba79",
         "type": "mqtt in",
         "z": "cefe46de0f9e8bf2",
@@ -873,7 +948,7 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 350,
+        "x": 230,
         "y": 440,
         "wires": [
             [
@@ -895,7 +970,7 @@
         "retentionPolicyV18Flux": "",
         "org": "lora",
         "bucket": "lora-test",
-        "x": 810,
+        "x": 650,
         "y": 440,
         "wires": []
     },
@@ -903,7 +978,7 @@
         "id": "f2075753f604a2eb",
         "type": "function",
         "z": "cefe46de0f9e8bf2",
-        "name": "function 1",
+        "name": "GetPayload",
         "func": "const deviceInfo = msg.payload.deviceInfo;\nconst payload = msg.payload.object;\nconst rxInfo = msg.payload.rxInfo[0];\nconst txInfo = msg.payload.txInfo.modulation.lora;\n\n\nlet data = {\n    ...(payload),\n\n    sf: txInfo.spreadingFactor,\n    bandwith: txInfo.bandwidth,\n    rssi: rxInfo.rssi,\n    snr: rxInfo.snr,\n    frameCounter: msg.payload.fCnt,\n}\n\nmsg.measurement = deviceInfo.deviceName;\nmsg.payload = data;\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
@@ -911,12 +986,79 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 600,
-        "y": 420,
+        "x": 470,
+        "y": 440,
         "wires": [
             [
-                "bdf194cf06eabce6"
+                "bdf194cf06eabce6",
+                "fb717e7e015fb5d5"
             ]
+        ]
+    },
+    {
+        "id": "fb717e7e015fb5d5",
+        "type": "debug",
+        "z": "cefe46de0f9e8bf2",
+        "name": "debug 6",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 640,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "076e15e10649815c",
+        "type": "inject",
+        "z": "cefe46de0f9e8bf2",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "AT+SENDB=0,2,4,11223344",
+        "payloadType": "str",
+        "x": 280,
+        "y": 240,
+        "wires": [
+            [
+                "05c8486eb8d1cd34"
+            ]
+        ]
+    },
+    {
+        "id": "05c8486eb8d1cd34",
+        "type": "serial out",
+        "z": "cefe46de0f9e8bf2",
+        "name": "Test",
+        "serial": "86c11333eddb56d2",
+        "x": 570,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "30c1584c1c429c61",
+        "type": "subflow:89be9fec0ab36cdd",
+        "z": "cefe46de0f9e8bf2",
+        "name": "",
+        "x": 200,
+        "y": 340,
+        "wires": [
+            []
         ]
     },
     {
