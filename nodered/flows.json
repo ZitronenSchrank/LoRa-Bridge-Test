@@ -27,18 +27,15 @@
                 "y": 420,
                 "wires": [
                     {
-                        "id": "8fb6b348aa5150d7"
-                    },
-                    {
-                        "id": "becea286b80c26c7"
+                        "id": "508f019966a9f70e"
                     }
                 ]
             }
         ],
         "out": [
             {
-                "x": 780,
-                "y": 80,
+                "x": 500,
+                "y": 60,
                 "wires": [
                     {
                         "id": "1ed3456d086a37d7",
@@ -324,18 +321,18 @@
         "type": "function",
         "z": "a07a3a816eaec58c",
         "name": "SEND MSG",
-        "func": "\n// https://developer.mozilla.org/en-US/docs/Glossary/Base64\nfunction base64ToBytes(base64) {\n    const binString = Buffer.from(base64, 'base64');\n    \n    return binString\n}\n\nfunction byteToString(byte){\n    return ('0' + (byte & 0xFF).toString(16)).slice(-2);\n}\n\n// https://stackoverflow.com/questions/34309988/byte-array-to-hex-string-conversion-in-javascript#34310051\nfunction toHexString(byteArray) {\n    return Array.from(byteArray, function (byte) {\n        return byteToString(byte);\n    }).join('')\n}\n\nconst data = msg.payload.msg\nconst bytes = base64ToBytes(data.rawData)\nlet sendString = \"AT+SENDB=\"\n\nsendString += (data.confirmed ? \"1\" : \"0\") + \",\"\nsendString += data.fPort + \",\"\nsendString += (bytes.length + 1) + \",\"\nsendString += byteToString(data.hash)\nsendString += toHexString(bytes)\n\nmsg.payload = sendString\nreturn msg;",
+        "func": "\n// https://developer.mozilla.org/en-US/docs/Glossary/Base64\nfunction base64ToBytes(base64) {\n    const binString = Buffer.from(base64, 'base64');\n    \n    return binString\n}\n\nfunction byteToString(byte){\n    return ('0' + (byte & 0xFF).toString(16)).slice(-2);\n}\n\n// https://stackoverflow.com/questions/34309988/byte-array-to-hex-string-conversion-in-javascript#34310051\nfunction toHexString(byteArray) {\n    return Array.from(byteArray, function (byte) {\n        return byteToString(byte);\n    }).join('')\n}\n\nconst data = msg.payload\nconst bytes = base64ToBytes(data.rawData)\nlet sendString = \"AT+SENDB=\"\n\nsendString += (data.confirmed ? \"1\" : \"0\") + \",\"\nsendString += data.fPort + \",\"\nsendString += (bytes.length + 1) + \",\"\nsendString += byteToString(data.hash)\nsendString += toHexString(bytes)\n\nmsg.payload = sendString\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1050,
-        "y": 440,
+        "x": 1250,
+        "y": 420,
         "wires": [
             [
-                "7c8386a2d17a03e2"
+                "b393b45e25327a33"
             ]
         ]
     },
@@ -345,7 +342,7 @@
         "z": "a07a3a816eaec58c",
         "name": "Send Message",
         "serial": "86c11333eddb56d2",
-        "x": 1500,
+        "x": 1440,
         "y": 420,
         "wires": []
     },
@@ -361,169 +358,14 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 570,
-        "y": 80,
+        "x": 270,
+        "y": 200,
         "wires": [
-            [],
+            [
+                "15fc833121c5b11f"
+            ],
             [
                 "d8b4e708b9ed75bf"
-            ]
-        ]
-    },
-    {
-        "id": "7c8386a2d17a03e2",
-        "type": "delay",
-        "z": "a07a3a816eaec58c",
-        "name": "",
-        "pauseType": "rate",
-        "timeout": "10",
-        "timeoutUnits": "milliseconds",
-        "rate": "1",
-        "nbRateUnits": "3",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "allowrate": false,
-        "outputs": 1,
-        "x": 1260,
-        "y": 440,
-        "wires": [
-            [
-                "b393b45e25327a33"
-            ]
-        ]
-    },
-    {
-        "id": "8e844b48ae104167",
-        "type": "serial out",
-        "z": "a07a3a816eaec58c",
-        "name": "Send IsJoined",
-        "serial": "86c11333eddb56d2",
-        "x": 1120,
-        "y": 520,
-        "wires": []
-    },
-    {
-        "id": "8fb6b348aa5150d7",
-        "type": "change",
-        "z": "a07a3a816eaec58c",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "topic",
-                "pt": "msg",
-                "to": "msg",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 560,
-        "y": 380,
-        "wires": [
-            [
-                "54b28727fd035b65"
-            ]
-        ]
-    },
-    {
-        "id": "77f58cad241ab74c",
-        "type": "function",
-        "z": "a07a3a816eaec58c",
-        "name": "Is Join Ok?",
-        "func": "if(msg.payload[0] === \"1\" && msg.payload[2] === \"OK\"){\n    msg.complete = true;\n    return [msg, null];\n}\nif(msg.payload[0] === \"0\" && msg.payload[2] === \"OK\"){\n    msg.complete = true;\n    return [null, msg];\n}\n\n",
-        "outputs": 2,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 390,
-        "y": 260,
-        "wires": [
-            [
-                "54b28727fd035b65"
-            ],
-            []
-        ]
-    },
-    {
-        "id": "54b28727fd035b65",
-        "type": "join",
-        "z": "a07a3a816eaec58c",
-        "name": "Warte auf JoinOk",
-        "mode": "custom",
-        "build": "object",
-        "property": "payload",
-        "propertyType": "msg",
-        "key": "topic",
-        "joiner": "\\n",
-        "joinerType": "str",
-        "accumulate": false,
-        "timeout": "",
-        "count": "",
-        "reduceRight": false,
-        "reduceExp": "",
-        "reduceInit": "",
-        "reduceInitType": "",
-        "reduceFixup": "",
-        "x": 790,
-        "y": 340,
-        "wires": [
-            [
-                "69ea3ec72677a2a7"
-            ]
-        ]
-    },
-    {
-        "id": "becea286b80c26c7",
-        "type": "function",
-        "z": "a07a3a816eaec58c",
-        "name": "Is Joined? ",
-        "func": "msg.payload = \"AT+NJS=?\"\nmsg.topic = \"Command\"\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 570,
-        "y": 460,
-        "wires": [
-            [
-                "54b28727fd035b65",
-                "c621c96646b73326"
-            ]
-        ]
-    },
-    {
-        "id": "c621c96646b73326",
-        "type": "delay",
-        "z": "a07a3a816eaec58c",
-        "name": "",
-        "pauseType": "rate",
-        "timeout": "10",
-        "timeoutUnits": "milliseconds",
-        "rate": "1",
-        "nbRateUnits": "3",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "allowrate": false,
-        "outputs": 1,
-        "x": 820,
-        "y": 540,
-        "wires": [
-            [
-                "8e844b48ae104167"
             ]
         ]
     },
@@ -532,12 +374,11 @@
         "type": "subflow:89be9fec0ab36cdd",
         "z": "a07a3a816eaec58c",
         "name": "Read Serial LA66",
-        "x": 200,
-        "y": 160,
+        "x": 80,
+        "y": 200,
         "wires": [
             [
-                "1ed3456d086a37d7",
-                "77f58cad241ab74c"
+                "1ed3456d086a37d7"
             ]
         ]
     },
@@ -545,19 +386,20 @@
         "id": "d8b4e708b9ed75bf",
         "type": "function",
         "z": "a07a3a816eaec58c",
-        "name": "function 1",
-        "func": "if(msg.payload.resend && msg.payload.resend === true){\n    return msg;\n}\n",
+        "name": "Resend",
+        "func": "\n\nif(msg.resend !== undefined && msg.resend === true){\n    const lastMessage = context.get(\"lastMessage\")||null;\n    if(lastMessage !== null){\n        return lastMessage;\n    }\n} else {\n    context.set(\"lastMessage\", msg);\n}\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 640,
-        "y": 180,
+        "x": 820,
+        "y": 360,
         "wires": [
             [
-                "ed2487eb4fce85d2"
+                "ed2487eb4fce85d2",
+                "583d763d9394d4c8"
             ]
         ]
     },
@@ -565,17 +407,97 @@
         "id": "ed2487eb4fce85d2",
         "type": "debug",
         "z": "a07a3a816eaec58c",
+        "d": true,
         "name": "debug 7",
         "active": true,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
-        "complete": "false",
+        "complete": "payload",
+        "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 840,
-        "y": 180,
+        "x": 1040,
+        "y": 280,
         "wires": []
+    },
+    {
+        "id": "583d763d9394d4c8",
+        "type": "delay",
+        "z": "a07a3a816eaec58c",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "200",
+        "timeoutUnits": "milliseconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1020,
+        "y": 360,
+        "wires": [
+            [
+                "69ea3ec72677a2a7"
+            ]
+        ]
+    },
+    {
+        "id": "508f019966a9f70e",
+        "type": "trigger",
+        "z": "a07a3a816eaec58c",
+        "name": "",
+        "op1": "",
+        "op2": "0",
+        "op1type": "pay",
+        "op2type": "str",
+        "duration": "0",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "ms",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 620,
+        "y": 420,
+        "wires": [
+            [
+                "d8b4e708b9ed75bf",
+                "69ea3ec72677a2a7"
+            ]
+        ]
+    },
+    {
+        "id": "15fc833121c5b11f",
+        "type": "change",
+        "z": "a07a3a816eaec58c",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "reset",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 480,
+        "y": 320,
+        "wires": [
+            [
+                "508f019966a9f70e"
+            ]
+        ]
     },
     {
         "id": "b40b6a3d0b65dc0b",
@@ -1064,7 +986,7 @@
         "timeout": "5",
         "timeoutUnits": "seconds",
         "rate": "1",
-        "nbRateUnits": "3",
+        "nbRateUnits": "1",
         "rateUnits": "second",
         "randomFirst": "1",
         "randomLast": "5",
@@ -1085,7 +1007,7 @@
         "type": "function",
         "z": "cefe46de0f9e8bf2",
         "name": "Get TimeDiff in Millis",
-        "func": "const deviceName = msg.payload.deviceInfo.deviceName;\nconst temperature = msg.payload.object.TEMP;\nconst timestamp = new Date(msg.payload.time).getTime()\n\nconst lastMCS = context.get(\"lastMCS\")||null;\nconst lastUSB = timestamp;\n\nif(temperature){\n    if(deviceName === \"LoRa-MCS\"){\n        context.set(\"lastMCS\", timestamp);\n        return;\n    }\n\n    if(deviceName === \"LoRa-USB\" && lastMCS != null){\n        msg.payload = {diffInMillis: lastUSB - lastMCS, time: timestamp};\n        msg.time = timestamp;\n        msg.measurement = \"Diff\"\n        context.set(\"lastMCS\", null);\n        return msg;\n    }\n}",
+        "func": "const deviceName = msg.payload.deviceInfo.deviceName;\nconst hasTemperature = msg.payload?.object.TEMP;\nconst timestamp = new Date(msg.payload.time).getTime()\n\nconst lastMCS = context.get(\"lastMCS\")||null;\nconst lastUSB = timestamp;\n\nif(hasTemperature){\n    if(deviceName === \"LoRa-MCS\"){\n        context.set(\"lastMCS\", timestamp);\n        return;\n    }\n\n    if(deviceName === \"LoRa-USB\" && lastMCS != null){\n        msg.payload = {diffInMillis: lastUSB - lastMCS, time: timestamp};\n        msg.time = timestamp;\n        msg.measurement = \"Diff\"\n        context.set(\"lastMCS\", null);\n        return msg;\n    }\n}",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
