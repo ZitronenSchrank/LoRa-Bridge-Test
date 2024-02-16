@@ -32,22 +32,7 @@
                 ]
             }
         ],
-        "out": [
-            {
-                "x": 500,
-                "y": 60,
-                "wires": [
-                    {
-                        "id": "1ed3456d086a37d7",
-                        "port": 0
-                    },
-                    {
-                        "id": "1ed3456d086a37d7",
-                        "port": 1
-                    }
-                ]
-            }
-        ],
+        "out": [],
         "env": [],
         "meta": {
             "module": "LA66"
@@ -351,7 +336,7 @@
         "type": "function",
         "z": "a07a3a816eaec58c",
         "name": "Is Send Ok",
-        "func": "if(msg.payload && msg.payload.includes(\"txDone\")){\n    return [msg,null];\n} else if(msg.payload && msg.payload[1] === \"AT_BUSY_ERROR\"){\n    return [null, {resend: true}]\n}\n",
+        "func": "if (msg.payload && (msg.payload.includes(\"rxTimeout\") || msg.payload.includes(\"rxDone\"))){\n    return [msg,null];\n} else if(msg.payload && msg.payload[1] === \"AT_BUSY_ERROR\"){\n    return [null, {resend: true}]\n}\n",
         "outputs": 2,
         "timeout": 0,
         "noerr": 0,
@@ -1030,9 +1015,7 @@
         "name": "",
         "x": 990,
         "y": 620,
-        "wires": [
-            []
-        ]
+        "wires": []
     },
     {
         "id": "95c7f105e2620929",
